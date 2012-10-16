@@ -67,12 +67,16 @@ def carriage_return_and_line_feed():
     return '\r\n'
 
 
-def max_line_width():
-    return 79
+def make_integer_method(value):
+    integer = int(value)
+
+    def method():
+        return integer
+    return method
 
 
-def max_soft_width():
-    return 72
+max_line_width = make_integer_method(79)
+max_soft_width = make_integer_method(72)
 
 
 def open_with_encoding(filename, encoding, mode='r'):
@@ -1630,6 +1634,7 @@ def fix_file(filename, opts, output=sys.stdout):
 
 def parse_args(args):
     """Parse command-line options."""
+    global max_line_width
     parser = OptionParser(usage='Usage: autopep8 [options] '
                                 '[filename [filename ...]]',
                           version='autopep8: %s' % __version__,
@@ -1649,6 +1654,10 @@ def parse_args(args):
     parser.add_option('-p', '--pep8-passes',
                       default=100, type='int',
                       help='maximum number of additional pep8 passes'
+                           ' (default: %default)')
+    parser.add_option('-w', '--max-line-width',
+                      default=max_line_width(), type='int',
+                      help='maximum number of characters preferred in one line'
                            ' (default: %default)')
     parser.add_option('--ignore', default='',
                       help='do not fix these errors/warnings (e.g. E4,W)')
@@ -1670,6 +1679,10 @@ def parse_args(args):
     if opts.in_place and opts.diff:
         parser.error('--in-place and --diff are mutually exclusive')
 
+    if opts.max_line_width:
+        max_line_width = make_integer_method(opts.max_line_width)
+    else:
+        max_line_width = make_integer_method(0)
     return opts, args
 
 
