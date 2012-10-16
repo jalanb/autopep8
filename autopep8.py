@@ -252,7 +252,7 @@ class FixPEP8(object):
                                    if self.options.ignore else []) +
                                   (['--select=' + self.options.select]
                                    if self.options.select else []) +
-                                  ['--max-line-length=' + max_line_width()] +
+                                  ['--max-line-length=%s' % max_line_width()] +
                                   [self.filename])
 
         if self.options.verbose:
