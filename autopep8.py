@@ -51,12 +51,28 @@ except ImportError:
 __version__ = '0.8.1'
 
 
-PEP8_BIN = 'pep8'
-CR = '\r'
-LF = '\n'
-CRLF = '\r\n'
-MAX_LINE_WIDTH = 79
-MAX_SOFT_WIDTH = 72
+def name_of_pep8_binary():
+    return 'pep8'
+
+
+def carriage_return():
+    return '\r'
+
+
+def line_feed():
+    return '\n'
+
+
+def carriage_return_and_line_feed():
+    return '\r\n'
+
+
+def max_line_width():
+    return 79
+
+
+def max_soft_width():
+    return 72
 
 
 def open_with_encoding(filename, encoding, mode='r'):
@@ -225,7 +241,7 @@ class FixPEP8(object):
                 self.options.ignore and self.options.ignore.split(','),
                 'select':
                 self.options.select and self.options.select.split(','),
-                'max_line_length': MAX_LINE_WIDTH,
+                'max_line_length': max_line_width(),
             }
             results = _execute_pep8(pep8_options, self.source)
         else:
@@ -236,7 +252,7 @@ class FixPEP8(object):
                                    if self.options.ignore else []) +
                                   (['--select=' + self.options.select]
                                    if self.options.select else []) +
-                                  ['--max-line-length=' + MAX_LINE_WIDTH] +
+                                  ['--max-line-length=' + max_line_width()] +
                                   [self.filename])
 
         if self.options.verbose:
@@ -324,7 +340,7 @@ class FixPEP8(object):
             return []
         ls, _, original = logical
         try:
-            rewrapper = Wrapper(original, hard_wrap=MAX_LINE_WIDTH)
+            rewrapper = Wrapper(original, hard_wrap=max_line_width())
         except (tokenize.TokenError, IndentationError):
             return []
         valid_indents = rewrapper.pep8_expected()
@@ -631,7 +647,7 @@ class FixPEP8(object):
         self.source[line_index] = fixed
 
     def fix_e501(self, result):
-        """Try to make lines fit within MAX_LINE_WIDTH characters."""
+        """Try to make lines fit within the max allowed line width."""
         line_index = result['line'] - 1
         target = self.source[line_index]
 
@@ -823,21 +839,21 @@ def find_newline(source):
     """Return type of newline used in source."""
     cr, lf, crlf = 0, 0, 0
     for s in source:
-        if CRLF in s:
+        if carriage_return_and_line_feed() in s:
             crlf += 1
-        elif CR in s:
+        elif carriage_return() in s:
             cr += 1
-        elif LF in s:
+        elif line_feed() in s:
             lf += 1
     _max = max(cr, crlf, lf)
     if _max == lf:
-        return LF
+        return line_feed()
     elif _max == crlf:
-        return CRLF
+        return carriage_return_and_line_feed()
     elif _max == cr:
-        return CR
+        return carriage_return()
     else:
-        return LF
+        return line_feed()
 
 
 def _get_indentword(source):
@@ -904,7 +920,7 @@ def _priority_key(pep8_result):
 def _shorten_line(tokens, source, target, indentation, indent_word, newline,
                   reverse=False):
     """Separate line at OPERATOR."""
-    max_line_width_minus_indentation = MAX_LINE_WIDTH - len(indentation)
+    max_line_width_minus_indentation = max_line_width() - len(indentation)
     if reverse:
         tokens.reverse()
     for tkn in tokens:
@@ -938,7 +954,7 @@ def _shorten_line(tokens, source, target, indentation, indent_word, newline,
             # Don't modify if lines are not short enough
             if len(first) > max_line_width_minus_indentation:
                 continue
-            if len(second) > MAX_LINE_WIDTH:  # Already includes indentation
+            if len(second) > max_line_width():  # Already includes indentation
                 continue
             # Do not begin a line with a comma
             if second.lstrip().startswith(','):
@@ -969,14 +985,14 @@ def fix_whitespace(line, offset, replacement):
 def _spawn_pep8(pep8_options):
     """Execute pep8 via subprocess.Popen."""
     for path in os.environ['PATH'].split(':'):
-        if os.path.exists(os.path.join(path, PEP8_BIN)):
-            cmd = ([os.path.join(path, PEP8_BIN)] +
+        if os.path.exists(os.path.join(path, name_of_pep8_binary())):
+            cmd = ([os.path.join(path, name_of_pep8_binary())] +
                    pep8_options)
             p = Popen(cmd, stdout=PIPE)
             output = p.communicate()[0].decode('utf-8')
             return [_analyze_pep8result(l)
                     for l in output.splitlines()]
-    raise Exception("'%s' is not found." % PEP8_BIN)
+    raise Exception("'%s' is not found." % name_of_pep8_binary())
 
 
 def _execute_pep8(pep8_options, source):
@@ -1203,7 +1219,7 @@ class Wrapper(object):
         tokenize.DEDENT, tokenize.NEWLINE, tokenize.ENDMARKER
     ])
 
-    def __init__(self, physical_lines, hard_wrap=MAX_LINE_WIDTH, soft_wrap=MAX_SOFT_WIDTH):
+    def __init__(self, physical_lines, hard_wrap=max_line_width(), soft_wrap=max_soft_width()):
         if type(physical_lines) != list:
             physical_lines = physical_lines.splitlines(keepends=True)
         self.lines = physical_lines
@@ -1475,7 +1491,7 @@ def break_multi_line(source_text, newline, indent_word):
     # Handle special case only.
     if ('(' in source_text and source_text.rstrip().endswith(',')):
         index = 1 + source_text.find('(')
-        if index >= MAX_LINE_WIDTH:
+        if index >= max_line_width():
             return None
 
         # Make sure we are not in a string.
