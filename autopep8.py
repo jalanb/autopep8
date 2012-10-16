@@ -75,8 +75,8 @@ def make_integer_method(value):
     return method
 
 
-max_line_width = make_integer_method(79)
-max_soft_width = make_integer_method(72)
+max_line_length = make_integer_method(79)
+max_soft_length = make_integer_method(72)
 
 
 def open_with_encoding(filename, encoding, mode='r'):
@@ -245,7 +245,7 @@ class FixPEP8(object):
                 self.options.ignore and self.options.ignore.split(','),
                 'select':
                 self.options.select and self.options.select.split(','),
-                'max_line_length': max_line_width(),
+                'max_line_length': max_line_length(),
             }
             results = _execute_pep8(pep8_options, self.source)
         else:
@@ -256,7 +256,7 @@ class FixPEP8(object):
                                    if self.options.ignore else []) +
                                   (['--select=' + self.options.select]
                                    if self.options.select else []) +
-                                  ['--max-line-length=%s' % max_line_width()] +
+                                  ['--max-line-length=%s' % max_line_length()] +
                                   [self.filename])
 
         if self.options.verbose:
@@ -344,7 +344,7 @@ class FixPEP8(object):
             return []
         ls, _, original = logical
         try:
-            rewrapper = Wrapper(original, hard_wrap=max_line_width())
+            rewrapper = Wrapper(original, hard_wrap=max_line_length())
         except (tokenize.TokenError, IndentationError):
             return []
         valid_indents = rewrapper.pep8_expected()
@@ -924,7 +924,7 @@ def _priority_key(pep8_result):
 def _shorten_line(tokens, source, target, indentation, indent_word, newline,
                   reverse=False):
     """Separate line at OPERATOR."""
-    max_line_width_minus_indentation = max_line_width() - len(indentation)
+    max_line_length_minus_indentation = max_line_length() - len(indentation)
     if reverse:
         tokens.reverse()
     for tkn in tokens:
@@ -932,12 +932,12 @@ def _shorten_line(tokens, source, target, indentation, indent_word, newline,
         if token.OP == tkn[0] and tkn[1] != '=':
             offset = tkn[2][1] + 1
             if reverse:
-                if offset > (max_line_width_minus_indentation -
+                if offset > (max_line_length_minus_indentation -
                              len(indent_word)):
                     continue
             else:
                 if (len(target.rstrip()) - offset >
-                        (max_line_width_minus_indentation -
+                        (max_line_length_minus_indentation -
                          len(indent_word))):
                     continue
             first = source[:offset - len(indentation)]
@@ -956,9 +956,9 @@ def _shorten_line(tokens, source, target, indentation, indent_word, newline,
                 continue
 
             # Don't modify if lines are not short enough
-            if len(first) > max_line_width_minus_indentation:
+            if len(first) > max_line_length_minus_indentation:
                 continue
-            if len(second) > max_line_width():  # Already includes indentation
+            if len(second) > max_line_length():  # Already includes indentation
                 continue
             # Do not begin a line with a comma
             if second.lstrip().startswith(','):
@@ -1223,7 +1223,7 @@ class Wrapper(object):
         tokenize.DEDENT, tokenize.NEWLINE, tokenize.ENDMARKER
     ])
 
-    def __init__(self, physical_lines, hard_wrap=max_line_width(), soft_wrap=max_soft_width()):
+    def __init__(self, physical_lines, hard_wrap=max_line_length(), soft_wrap=max_soft_length()):
         if type(physical_lines) != list:
             physical_lines = physical_lines.splitlines(keepends=True)
         self.lines = physical_lines
@@ -1495,7 +1495,7 @@ def break_multi_line(source_text, newline, indent_word):
     # Handle special case only.
     if ('(' in source_text and source_text.rstrip().endswith(',')):
         index = 1 + source_text.find('(')
-        if index >= max_line_width():
+        if index >= max_line_length():
             return None
 
         # Make sure we are not in a string.
@@ -1634,7 +1634,7 @@ def fix_file(filename, opts, output=sys.stdout):
 
 def parse_args(args):
     """Parse command-line options."""
-    global max_line_width
+    global max_line_length
     parser = OptionParser(usage='Usage: autopep8 [options] '
                                 '[filename [filename ...]]',
                           version='autopep8: %s' % __version__,
@@ -1655,8 +1655,8 @@ def parse_args(args):
                       default=100, type='int',
                       help='maximum number of additional pep8 passes'
                            ' (default: %default)')
-    parser.add_option('-w', '--max-line-width',
-                      default=max_line_width(), type='int',
+    parser.add_option('-w', '--max-line-length',
+                      default=max_line_length(), type='int',
                       help='maximum number of characters preferred in one line'
                            ' (default: %default)')
     parser.add_option('--ignore', default='',
@@ -1679,10 +1679,10 @@ def parse_args(args):
     if opts.in_place and opts.diff:
         parser.error('--in-place and --diff are mutually exclusive')
 
-    if opts.max_line_width:
-        max_line_width = make_integer_method(opts.max_line_width)
+    if opts.max_line_length:
+        max_line_length = make_integer_method(opts.max_line_length)
     else:
-        max_line_width = make_integer_method(0)
+        max_line_length = make_integer_method(0)
     return opts, args
 
 
