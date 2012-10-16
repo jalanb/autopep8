@@ -56,6 +56,7 @@ CR = '\r'
 LF = '\n'
 CRLF = '\r\n'
 MAX_LINE_WIDTH = 79
+MAX_SOFT_WIDTH = 72
 
 
 def open_with_encoding(filename, encoding, mode='r'):
@@ -628,7 +629,7 @@ class FixPEP8(object):
         self.source[line_index] = fixed
 
     def fix_e501(self, result):
-        """Try to make lines fit within 79 characters."""
+        """Try to make lines fit within MAX_LINE_WIDTH characters."""
         line_index = result['line'] - 1
         target = self.source[line_index]
 
@@ -1200,7 +1201,7 @@ class Wrapper(object):
         tokenize.DEDENT, tokenize.NEWLINE, tokenize.ENDMARKER
     ])
 
-    def __init__(self, physical_lines, hard_wrap=79, soft_wrap=72):
+    def __init__(self, physical_lines, hard_wrap=MAX_LINE_WIDTH, soft_wrap=MAX_SOFT_WIDTH):
         if type(physical_lines) != list:
             physical_lines = physical_lines.splitlines(keepends=True)
         self.lines = physical_lines
