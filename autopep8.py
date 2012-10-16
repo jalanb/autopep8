@@ -225,6 +225,7 @@ class FixPEP8(object):
                 self.options.ignore and self.options.ignore.split(','),
                 'select':
                 self.options.select and self.options.select.split(','),
+                'max_line_length': MAX_LINE_WIDTH,
             }
             results = _execute_pep8(pep8_options, self.source)
         else:
@@ -235,6 +236,7 @@ class FixPEP8(object):
                                    if self.options.ignore else []) +
                                   (['--select=' + self.options.select]
                                    if self.options.select else []) +
+                                  ['--max-line-length=' + MAX_LINE_WIDTH] +
                                   [self.filename])
 
         if self.options.verbose:
